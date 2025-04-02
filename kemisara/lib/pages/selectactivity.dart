@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:iconly/iconly.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../pages/doctor.dart';
 import '../pages/medicine.dart';
 import '../pages/AddMonthlyPeroid.dart';
@@ -26,7 +27,7 @@ class SelectActivityPage extends StatelessWidget {
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [Colors.blue.shade900, Colors.blue.shade300], // Dark to light blue gradient
+                colors: [Color(0xFF003765), Color(0xFF539CE4)], // Dark to light blue gradient
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
               ),
@@ -79,7 +80,7 @@ class SelectActivityPage extends StatelessWidget {
                       ),
                       SizedBox(height: 30),
                       _buildActivityButton(Icons.local_hospital_sharp, "Doctor's Appointment", context),
-                      _buildActivityButton(Icons.medication_rounded, "Take Medicine", context),
+                      _buildActivityButton(FontAwesomeIcons.capsules, "Take Medicine", context),
                       _buildActivityButton(Icons.water_drop, "Monthly Period", context),
                     ],
                     
@@ -136,7 +137,7 @@ class SelectActivityPage extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           SizedBox(width: 30),
-          Icon(icon, color: Colors.white),
+          Icon(icon, size: 30, color: Colors.white),
           SizedBox(width: 20),
           Text(
             label,
