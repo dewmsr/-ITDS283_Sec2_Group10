@@ -10,7 +10,7 @@ class SignUpPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF003366),
+      backgroundColor: const Color(0xFF003765),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 30),
@@ -21,7 +21,7 @@ class SignUpPage extends StatelessWidget {
               Text(
                 'Create an account',
                 style: TextStyle(
-                  fontSize: 22,
+                  fontSize: 26,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
@@ -55,7 +55,7 @@ class SignUpPage extends StatelessWidget {
                 Navigator.pop(context);
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.yellow,
+                backgroundColor: Color(0xFFE3D322),
                 minimumSize: Size(double.infinity, 50),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
@@ -63,7 +63,7 @@ class SignUpPage extends StatelessWidget {
               ),
               child: Text(
                 'Sign Up',
-                style: TextStyle(color: Colors.black),
+                style: TextStyle(color: Colors.black, fontSize: 16),
               ),
             ),
 
@@ -73,7 +73,7 @@ class SignUpPage extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text("Already have an account? ",
-                      style: TextStyle(color: Colors.white)),
+                      style: TextStyle(color: Colors.white, fontSize: 16)),
                   GestureDetector(
                     onTap: () {
                       Navigator.pop(context); // ย้อนกลับไปหน้า login
@@ -81,8 +81,8 @@ class SignUpPage extends StatelessWidget {
                     child: Text(
                       'Login',
                       style: TextStyle(
-                        color: Colors.yellow,
-                        fontWeight: FontWeight.bold,
+                        color: Color(0xFFFFF264),
+                        fontSize: 16,
                         decoration: TextDecoration.underline,
                       ),
                     ),
