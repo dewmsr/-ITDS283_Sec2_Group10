@@ -184,8 +184,7 @@ Widget buildTimeSelector() {
                         TextField(
                           controller: medicineController,
                           decoration: InputDecoration(
-                            hintText: "Add Your Medicine",
-                            suffixIcon: Icon(Icons.check_circle, color: Colors.blue),
+                            hintText: "Add Your Medicine"
                           ),
                         ),
                         SizedBox(height: 20),
@@ -278,7 +277,7 @@ Widget buildTimeSelector() {
                         Divider(),
                         TextField(
                           controller: noteController,
-                          maxLines: 2,
+                          maxLines: 1,
                           decoration: InputDecoration(
                             icon: Icon(Icons.note_alt_outlined),
                             hintText: "Note",
