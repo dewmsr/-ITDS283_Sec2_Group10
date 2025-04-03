@@ -1,18 +1,22 @@
 import 'package:flutter/material.dart';
+import 'pages/login.dart';
+import 'pages/homepage.dart';
+import 'pages/signup.dart';
 
-import 'pages/selectactivity.dart';
-void main() {
-  runApp(const MyApp());
-}
+
+void main() => runApp(MyApp());
+
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData(fontFamily: 'Poppins'),
-      home: SelectActivityPage()
+      title: 'Login UI',
+      home: LoginPage(),
+      routes: {
+        '/home': (context) => HomePage(),
+        '/signup': (context) => SignUpPage(),
+      },
     );
   }
 }
