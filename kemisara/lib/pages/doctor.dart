@@ -123,18 +123,8 @@ class _DoctorAppointmentPageState extends State<DoctorAppointmentPage> {
                         TextField(
                           controller: titleController,
                           decoration: InputDecoration(
-                            labelText: "Title",
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                isTitleActive ? Icons.check_circle : Icons.radio_button_unchecked,
-                                color: isTitleActive ? Colors.blue : Colors.grey,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  isTitleActive = !isTitleActive;
-                                });
-                              },
-                            ),
+                            labelText: "Title"
+                            
                           ),
                         ),
                         SizedBox(height: 10),
@@ -219,7 +209,7 @@ class _DoctorAppointmentPageState extends State<DoctorAppointmentPage> {
                         Divider(),
                         TextField(
                           controller: noteController,
-                          maxLines: 2,
+                          maxLines: 1,
                           decoration: InputDecoration(
                             icon: Icon(Icons.note_alt_outlined),
                             hintText: "Note",
