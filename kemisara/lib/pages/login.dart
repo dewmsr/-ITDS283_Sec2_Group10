@@ -9,10 +9,10 @@ class LoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF003366),
+      backgroundColor: Color(0xFF003765),
       body: Stack(
         children: [
-          // ✅ พื้นที่ฟอร์ม login
+          // พื้นที่ฟอร์ม login
          Positioned.fill(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.symmetric(horizontal: 30),
@@ -22,7 +22,7 @@ class LoginPage extends StatelessWidget {
                       Text(
                         "Hi, Welcome Back!",
                         style: TextStyle(
-                          fontSize: 24,
+                          fontSize: 26,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
@@ -30,7 +30,7 @@ class LoginPage extends StatelessWidget {
                       SizedBox(height: 30),
                       Align(
                         alignment: Alignment.centerLeft,
-                        child: Text("Email", style: TextStyle(color: Colors.white)),
+                        child: Text("Email", style: TextStyle(color: Colors.white, fontSize: 16)),
                       ),
                       SizedBox(height: 8),
                       TextField(
@@ -54,7 +54,7 @@ class LoginPage extends StatelessWidget {
                       SizedBox(height: 20),
                       Align(
                         alignment: Alignment.centerLeft,
-                        child: Text("Password", style: TextStyle(color: Colors.white)),
+                        child: Text("Password", style: TextStyle(color: Colors.white, fontSize: 16)),
                       ),
                       SizedBox(height: 8),
                       TextField(
@@ -83,26 +83,26 @@ class LoginPage extends StatelessWidget {
                           Navigator.pushNamed(context, '/home');
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.yellow,
+                          backgroundColor: Color(0xFFE3D322),
                           minimumSize: Size(double.infinity, 50),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
                         ),
-                        child: Text('Login', style: TextStyle(color: Colors.black)),
+                        child: Text('Login', style: TextStyle(color: Colors.black, fontSize: 20)),
                       ),
                       SizedBox(height: 20),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text("Don't have an account ? ", style: TextStyle(color: Colors.white)),
+                          Text("Don't have an account ? ", style: TextStyle(color: Colors.white, fontSize: 16)),
                           TextButton(
                             onPressed: () {
                               Navigator.pushNamed(context, '/signup');
                             },
                             child: Text(
                               'Sign Up',
-                              style: TextStyle(color: Colors.yellow),
+                              style: TextStyle(color: Color(0xFFFFF264), fontSize: 16, decoration: TextDecoration.underline,),
                             ),
                           ),
                         ],
@@ -113,7 +113,7 @@ class LoginPage extends StatelessWidget {
                 ),
               ),
 
-          // ✅ รูปภาพล่างสุด
+          // รูปภาพล่างสุด
           Align(
   alignment: Alignment.bottomRight,
   child: Padding(
