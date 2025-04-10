@@ -19,7 +19,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.7.0
+  sdk: ^3.7.2
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -32,8 +32,6 @@ dependencies:
     sdk: flutter
   iconly: ^1.0.1
   intl: ^0.18.0
-  font_awesome_flutter: ^10.5.0
-  time_picker_spinner: ^1.0.2
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -42,7 +40,6 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -64,11 +61,7 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - assets/images/business-tasklist 1.png
-  #   - images/a_dot_ham.jpeghome_health
-    - assets/icons/home_health.png
-    - assets/images/HomePageTopNav.png
-    - assets/images/medicine 1.png
+    - assets/HomePageTopNav.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

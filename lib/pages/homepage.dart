@@ -15,7 +15,7 @@ class HomePage extends StatelessWidget {
             width: double.infinity,
             height: imageHeight,
             child: Image.asset(
-              'assets/images/HomePageTopNav.png',
+              'assets/HomePageTopNav.png',
               fit: BoxFit.cover,
             ),
           ),
