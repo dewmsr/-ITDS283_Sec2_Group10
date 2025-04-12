@@ -1,6 +1,6 @@
 {
-    "name": "healthacker",
-    "short_name": "healthacker",
+    "name": "healthacker2",
+    "short_name": "healthacker2",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
