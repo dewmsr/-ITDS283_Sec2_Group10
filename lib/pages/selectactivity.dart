@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../pages/doctor.dart';
 import '../pages/medicine.dart';
 import '../pages/AddMonthlyPeroid.dart';
+import '../layout/main_layout.dart';
 
 
 
@@ -10,16 +11,9 @@ import '../pages/AddMonthlyPeroid.dart';
 class SelectActivityPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      // bottomNavigationBar: BottomNavigationBar(
-      //   items: [
-      //     BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
-      //     BottomNavigationBarItem(icon: Icon(Icons.calendar_today), label: ''),
-      //     BottomNavigationBarItem(icon: Icon(Icons.add_circle, size: 40, color: Colors.blue), label: ''),
-      //     BottomNavigationBarItem(icon: Icon(Icons.message), label: ''),
-      //     BottomNavigationBarItem(icon: Icon(Icons.person), label: ''),
-      //   ],
-      // ),
+    return MainLayout(
+    selectedIndex: 2, // ปุ่มกลาง
+    body: Scaffold(
       body: Stack(
         children: [
           // Background Gradient
@@ -102,6 +96,7 @@ class SelectActivityPage extends StatelessWidget {
           ),
         ],
       ),
+    ),
     );
   }
 

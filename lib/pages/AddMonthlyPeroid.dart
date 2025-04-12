@@ -5,12 +5,10 @@ import 'package:intl/intl.dart';
 class Addmonthlyperiod extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: PeriodTracker(),
-    );
+    return PeriodTracker(); 
   }
 }
+
 
 class PeriodTracker extends StatefulWidget {
   @override
@@ -46,6 +44,10 @@ class _PeriodTrackerState extends State<PeriodTracker> {
       sexDrive = periodData[DateFormat('yyyy-MM-dd').format(date)]!['sexDrive']!;
     });
   }
+  void CancelData(BuildContext context) {
+  Navigator.pop(context);
+}
+
 
   void saveData() {
     setState(() {
@@ -202,16 +204,15 @@ class _PeriodTrackerState extends State<PeriodTracker> {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   TextButton(
-                    onPressed: () => print('Cancelled'),
-                    child: Text(
-                      'Cancel',
-                      style: TextStyle(color: Colors.red),
-                    ),
-                  ),
-                  ElevatedButton(
-                    onPressed: saveData,
-                    child: Text('Save'),
-                  ),
+                        onPressed: () => CancelData(context),
+                        child: Text("Cancel", style: TextStyle(color: Colors.red, fontSize: 18)),
+                      ),
+                    
+                  
+                  TextButton(
+                              onPressed: saveData,
+                              child: Text("Save", style: TextStyle(color: Colors.green, fontSize: 18)),
+                            ),
                 ],
               ),
             ],

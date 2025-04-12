@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-// import '../pages/homepage.dart';
-// import '../pages/signup.dart';
+import '../pages/homepage.dart';
+import '../pages/signup.dart';
 
 class LoginPage extends StatelessWidget {
   final TextEditingController emailController = TextEditingController();
@@ -80,7 +80,7 @@ class LoginPage extends StatelessWidget {
                       SizedBox(height: 30),
                       ElevatedButton(
                         onPressed: () {
-                          Navigator.pushNamed(context, '/home');
+                          Navigator.pushNamed(context, '/homepage');
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Color(0xFFE3D322),
@@ -96,15 +96,24 @@ class LoginPage extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text("Don't have an account ? ", style: TextStyle(color: Colors.white, fontSize: 16)),
-                          TextButton(
-                            onPressed: () {
-                              Navigator.pushNamed(context, '/signup');
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => SignUpPage()),
+                              );
                             },
                             child: Text(
                               'Sign Up',
-                              style: TextStyle(color: Color(0xFFFFF264), fontSize: 16, decoration: TextDecoration.underline,),
+                              style: TextStyle(
+                                color: Color(0xFFFFF264),
+                                fontSize: 16,
+                                decoration: TextDecoration.underline,
+                              ),
                             ),
                           ),
+
+
                         ],
                       ),
                       SizedBox(height: 120),
