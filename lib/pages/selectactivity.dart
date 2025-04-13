@@ -6,8 +6,6 @@ import '../pages/AddMonthlyPeroid.dart';
 import '../layout/main_layout.dart';
 
 
-
-
 class SelectActivityPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -40,8 +38,7 @@ class SelectActivityPage extends StatelessWidget {
                           'Add Activity',
                           style: TextStyle(
                             color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
+                            fontSize: 22,
                           ),
                         ),
                         Icon(Icons.notifications, color: Colors.white),
@@ -68,7 +65,7 @@ class SelectActivityPage extends StatelessWidget {
                       SizedBox(height: 30),
                       Text(
                         'Select Your Activity',
-                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black),
+                        style: TextStyle(fontSize: 22, color: Colors.black),
                         
                       ),
                       SizedBox(height: 30),
@@ -105,7 +102,7 @@ class SelectActivityPage extends StatelessWidget {
     padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
     child: ElevatedButton(
       style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.greenAccent,
+        backgroundColor: Color.fromARGB(255, 57, 202, 91),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         padding: EdgeInsets.symmetric(vertical: 15),
       ),
@@ -135,7 +132,7 @@ class SelectActivityPage extends StatelessWidget {
           SizedBox(width: 20),
           Text(
             label,
-            style: TextStyle(fontSize: 24, color: Colors.white),
+            style: TextStyle(fontSize: 20, color: Colors.white),
           ),
         ],
       ),

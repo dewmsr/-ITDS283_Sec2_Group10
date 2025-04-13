@@ -69,11 +69,11 @@ class _CalendarPageState extends State<CalendarPage> {
                     ),
                     calendarStyle: CalendarStyle(
                       selectedDecoration: const BoxDecoration(
-                        color: Colors.pinkAccent,
+                        color: Color.fromARGB(255, 255, 127, 159),
                         shape: BoxShape.circle,
                       ),
                       todayDecoration: BoxDecoration(
-                        color: Colors.blue[100],
+                        color: const Color.fromARGB(255, 73, 173, 255),
                         shape: BoxShape.circle,
                       ),
                       weekendTextStyle: const TextStyle(color: Colors.black54),
@@ -141,7 +141,7 @@ class _CalendarPageState extends State<CalendarPage> {
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: Colors.greenAccent[400],
+                          color: Color.fromARGB(255, 57, 202, 91),
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Column(

@@ -164,7 +164,7 @@ Widget buildTimeSelector() {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text("Take Medicine",
-                          style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
+                          style: TextStyle(color: Colors.white, fontSize: 22)),
                       Icon(Icons.notifications, color: Colors.white),
                     ],
                   ),

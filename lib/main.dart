@@ -9,9 +9,6 @@ import 'pages/profile.dart';
 import 'layout/main_layout.dart';
 import 'widgets/homecontent.dart';
 
-
-
-
 void main() {
   runApp(MyApp());
 }
@@ -23,9 +20,9 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(fontFamily: 'Poppins'),
       title: 'Login UI',
       debugShowCheckedModeBanner: false,
-      initialRoute: '/', // ✅ ใช้ '/' ให้ตรงกับ route ที่กำหนดด้านล่าง
+      initialRoute: '/', // ใช้ '/' ให้ตรงกับ route ที่กำหนดด้านล่าง
       routes: {
-        '/': (context) => LoginPage(),           // ✅ เพิ่มหน้านี้!
+        '/': (context) => LoginPage(), 
         '/signup': (context) => SignUpPage(),
          '/homepage': (context) => MainLayout(selectedIndex: 0, body: HomeContent()),
         '/calendar': (context) => MainLayout(selectedIndex: 1, body: CalendarPage()),

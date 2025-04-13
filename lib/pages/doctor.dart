@@ -106,7 +106,7 @@ class _DoctorAppointmentPageState extends State<DoctorAppointmentPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text("Doctor's Appointment",
-                          style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
+                          style: TextStyle(color: Colors.white, fontSize: 22)),
                       Icon(Icons.notifications, color: Colors.white),
                     ],
                   ),
