@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../layout/main_layout.dart';
-
+import '../service/api_map.dart'; // <- เปลี่ยน path ตามโฟลเดอร์ที่คุณเก็บไฟล์ไว้
 
 class DoctorAppointmentPage extends StatefulWidget {
   @override
@@ -12,6 +12,29 @@ class _DoctorAppointmentPageState extends State<DoctorAppointmentPage> {
   TextEditingController titleController = TextEditingController();
   TextEditingController locationController = TextEditingController();
   TextEditingController noteController = TextEditingController();
+
+  //-----TomTom API------//
+
+  List<String> locationSuggestions = [];
+
+  @override
+  void initState() {
+    super.initState();
+
+    locationController.addListener(() async {
+      final query = locationController.text;
+      if (query.length >= 3) {
+        try {
+          final results = await TomTomService.searchLocations(query);
+          setState(() {
+            locationSuggestions = results;
+          });
+        } catch (e) {
+          print("Error fetching locations: $e");
+        }
+      }
+    });
+  }
 
   bool isAllDay = false;
   bool isTitleActive = false;
@@ -59,8 +82,20 @@ class _DoctorAppointmentPageState extends State<DoctorAppointmentPage> {
   }
 
   void _onSave() {
-    final startDT = DateTime(startDate.year, startDate.month, startDate.day, startTime.hour, startTime.minute);
-    final endDT = DateTime(endDate.year, endDate.month, endDate.day, endTime.hour, endTime.minute);
+    final startDT = DateTime(
+      startDate.year,
+      startDate.month,
+      startDate.day,
+      startTime.hour,
+      startTime.minute,
+    );
+    final endDT = DateTime(
+      endDate.year,
+      endDate.month,
+      endDate.day,
+      endTime.hour,
+      endTime.minute,
+    );
 
     print("=== Doctor Appointment Saved ===");
     print("Title: ${titleController.text}");
@@ -79,7 +114,13 @@ class _DoctorAppointmentPageState extends State<DoctorAppointmentPage> {
   }
 
   String formatDateTime(DateTime date, TimeOfDay time) {
-    final dt = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+    final dt = DateTime(
+      date.year,
+      date.month,
+      date.day,
+      time.hour,
+      time.minute,
+    );
     return DateFormat('EEE d MMM y h:mm a').format(dt);
   }
 
@@ -101,12 +142,17 @@ class _DoctorAppointmentPageState extends State<DoctorAppointmentPage> {
             children: [
               SafeArea(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 20,
+                  ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text("Doctor's Appointment",
-                          style: TextStyle(color: Colors.white, fontSize: 22)),
+                      Text(
+                        "Doctor's Appointment",
+                        style: TextStyle(color: Colors.white, fontSize: 22),
+                      ),
                       Icon(Icons.notifications, color: Colors.white),
                     ],
                   ),
@@ -117,17 +163,16 @@ class _DoctorAppointmentPageState extends State<DoctorAppointmentPage> {
                   padding: EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(30),
+                    ),
                   ),
                   child: SingleChildScrollView(
                     child: Column(
                       children: [
                         TextField(
                           controller: titleController,
-                          decoration: InputDecoration(
-                            labelText: "Title"
-                            
-                          ),
+                          decoration: InputDecoration(labelText: "Title"),
                         ),
                         SizedBox(height: 10),
                         Row(
@@ -150,14 +195,19 @@ class _DoctorAppointmentPageState extends State<DoctorAppointmentPage> {
                           SizedBox(height: 10),
                           Align(
                             alignment: Alignment.centerLeft,
-                            child: Text("Start", style: TextStyle(fontWeight: FontWeight.bold)),
+                            child: Text(
+                              "Start",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
                           ),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               TextButton(
                                 onPressed: () => _pickDate(isStart: true),
-                                child: Text(DateFormat('y-MM-dd').format(startDate)),
+                                child: Text(
+                                  DateFormat('y-MM-dd').format(startDate),
+                                ),
                               ),
                               TextButton(
                                 onPressed: () => _pickTime(isStart: true),
@@ -168,14 +218,19 @@ class _DoctorAppointmentPageState extends State<DoctorAppointmentPage> {
                           SizedBox(height: 10),
                           Align(
                             alignment: Alignment.centerLeft,
-                            child: Text("End", style: TextStyle(fontWeight: FontWeight.bold)),
+                            child: Text(
+                              "End",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
                           ),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               TextButton(
                                 onPressed: () => _pickDate(isStart: false),
-                                child: Text(DateFormat('y-MM-dd').format(endDate)),
+                                child: Text(
+                                  DateFormat('y-MM-dd').format(endDate),
+                                ),
                               ),
                               TextButton(
                                 onPressed: () => _pickTime(isStart: false),
@@ -192,6 +247,22 @@ class _DoctorAppointmentPageState extends State<DoctorAppointmentPage> {
                             hintText: "Location",
                           ),
                         ),
+                        if (locationSuggestions.isNotEmpty)
+                          Column(
+                            children:
+                                locationSuggestions.map((suggestion) {
+                                  return ListTile(
+                                    title: Text(suggestion),
+                                    onTap: () {
+                                      setState(() {
+                                        locationController.text = suggestion;
+                                        locationSuggestions = [];
+                                      });
+                                    },
+                                  );
+                                }).toList(),
+                          ),
+
                         Divider(),
                         Row(
                           children: [
@@ -201,7 +272,13 @@ class _DoctorAppointmentPageState extends State<DoctorAppointmentPage> {
                               onTap: () => _showReminderOptions(),
                               child: Row(
                                 children: [
-                                  Text(reminder, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                                  Text(
+                                    reminder,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
                                   Icon(Icons.keyboard_arrow_down),
                                 ],
                               ),
@@ -223,19 +300,31 @@ class _DoctorAppointmentPageState extends State<DoctorAppointmentPage> {
                           children: [
                             TextButton(
                               onPressed: _onCancel,
-                              child: Text("Cancel", style: TextStyle(color: Colors.red, fontSize: 18)),
+                              child: Text(
+                                "Cancel",
+                                style: TextStyle(
+                                  color: Colors.red,
+                                  fontSize: 18,
+                                ),
+                              ),
                             ),
                             TextButton(
                               onPressed: _onSave,
-                              child: Text("Save", style: TextStyle(color: Colors.green, fontSize: 18)),
+                              child: Text(
+                                "Save",
+                                style: TextStyle(
+                                  color: Colors.green,
+                                  fontSize: 18,
+                                ),
+                              ),
                             ),
                           ],
-                        )
+                        ),
                       ],
                     ),
                   ),
                 ),
-              )
+              ),
             ],
           ),
         ],
@@ -263,18 +352,22 @@ class _DoctorAppointmentPageState extends State<DoctorAppointmentPage> {
 
         return ListView(
           shrinkWrap: true,
-          children: options.map((option) {
-            return ListTile(
-              title: Text(option),
-              trailing: reminder == option ? Icon(Icons.check, color: Colors.blue) : null,
-              onTap: () {
-                setState(() {
-                  reminder = option;
-                });
-                Navigator.pop(context);
-              },
-            );
-          }).toList(),
+          children:
+              options.map((option) {
+                return ListTile(
+                  title: Text(option),
+                  trailing:
+                      reminder == option
+                          ? Icon(Icons.check, color: Colors.blue)
+                          : null,
+                  onTap: () {
+                    setState(() {
+                      reminder = option;
+                    });
+                    Navigator.pop(context);
+                  },
+                );
+              }).toList(),
         );
       },
     );
