@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../widgets/bottomnavbar.dart';
 import '../layout/main_layout.dart';
+import '../db/database.dart';
+import '../models/user.dart';
+import 'login.dart'; // เพิ่ม import หน้า Login
 
 class ProfilePage extends StatefulWidget {
   @override
@@ -10,6 +14,27 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   bool isNotificationOn = true;
   bool isLocationOn = true;
+
+  UserModel? _user;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUser();
+  }
+
+  Future<void> _loadUser() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getInt('userId');
+
+    if (userId != null) {
+      final db = DatabaseHelper();
+      final user = await db.getUserById(userId);
+      setState(() {
+        _user = user;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +58,7 @@ class _ProfilePageState extends State<ProfilePage> {
             children: [
               SizedBox(height: 30),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal:20),
+                padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -66,60 +91,47 @@ class _ProfilePageState extends State<ProfilePage> {
                       )
                     ],
                   ),
-                  child: Column(
-                    children: [
-                      // Profile Circle
-                      CircleAvatar(
-                        radius: 45,
-                        backgroundColor: Colors.grey.shade400,
-                      ),
-                      SizedBox(height: 16),
+                  child: _user == null
+                      ? Center(child: CircularProgressIndicator())
+                      : Column(
+                          children: [
+                            CircleAvatar(
+                              radius: 45,
+                              backgroundColor: Colors.grey.shade400,
+                            ),
+                            SizedBox(height: 16),
 
-                      // Name
-                      Text(
-                        "Thanyarat Wuthiroongreungsakul",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.w600),
-                      ),
-                      SizedBox(height: 12),
+                            // Name
+                            Text(
+                              "${_user!.firstName} ${_user!.lastName}",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.w600),
+                            ),
+                            SizedBox(height: 12),
 
-                      // Birthday
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.cake_outlined, size: 18),
-                          SizedBox(width: 8),
-                          Text("31 Jan 2005 (20 years)"),
-                        ],
-                      ),
-                      SizedBox(height: 8),
+                            // Phone
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.phone_outlined, size: 18),
+                                SizedBox(width: 8),
+                                Text(_user!.phone),
+                              ],
+                            ),
+                            SizedBox(height: 8),
 
-                      // Phone
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.phone_outlined, size: 18),
-                          SizedBox(width: 8),
-                          Text("090 - 996 - 4010"),
-                        ],
-                      ),
-                      SizedBox(height: 8),
-
-                      // Email
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.email_outlined, size: 18),
-                          SizedBox(width: 8),
-                          Text(
-                            "thanyarat.wut@student.mahidol.edu",
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                            // Email
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.email_outlined, size: 18),
+                                SizedBox(width: 8),
+                                Text(_user!.email, overflow: TextOverflow.ellipsis),
+                              ],
+                            ),
+                          ],
+                        ),
                 ),
               ),
 
@@ -149,16 +161,14 @@ class _ProfilePageState extends State<ProfilePage> {
                         SizedBox(width: 12),
                         Text("Notification", style: TextStyle(fontSize: 16)),
                       ]),
-                      Row(children: [
-                        Switch(
-                          value: isNotificationOn,
-                          onChanged: (value) {
-                            setState(() {
-                              isNotificationOn = value;
-                            });
-                          },
-                        ),
-                      ]),
+                      Switch(
+                        value: isNotificationOn,
+                        onChanged: (value) {
+                          setState(() {
+                            isNotificationOn = value;
+                          });
+                        },
+                      ),
                     ],
                   ),
                 ),
@@ -190,17 +200,40 @@ class _ProfilePageState extends State<ProfilePage> {
                         SizedBox(width: 12),
                         Text("Location", style: TextStyle(fontSize: 16)),
                       ]),
-                      Row(children: [
-                        Switch(
-                          value: isLocationOn,
-                          onChanged: (value) {
-                            setState(() {
-                              isLocationOn = value;
-                            });
-                          },
-                        ),
-                      ]),
+                      Switch(
+                        value: isLocationOn,
+                        onChanged: (value) {
+                          setState(() {
+                            isLocationOn = value;
+                          });
+                        },
+                      ),
                     ],
+                  ),
+                ),
+              ),
+
+              SizedBox(height: 30),
+
+              // 🔴 Logout Button
+              ElevatedButton.icon(
+                onPressed: () async {
+                  final prefs = await SharedPreferences.getInstance();
+                  await prefs.remove('userId'); // ลบ user session
+
+                  // กลับไปหน้า LoginPage
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => LoginPage()),
+                  );
+                },
+                icon: Icon(Icons.logout, color: Colors.white),
+                label: Text("Logout", style: TextStyle(color: Colors.white)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.redAccent,
+                  minimumSize: Size(200, 45),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
                   ),
                 ),
               ),
@@ -208,6 +241,6 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
         ],
       ),
-      );
+    );
   }
 }

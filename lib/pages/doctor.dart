@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../layout/main_layout.dart';
-import '../service/api_map.dart'; // <- เปลี่ยน path ตามโฟลเดอร์ที่คุณเก็บไฟล์ไว้
+import '../service/api_map.dart'; 
+import '../models/appointment.dart';
+import '../db/database.dart';
 
 class DoctorAppointmentPage extends StatefulWidget {
   @override
@@ -16,11 +18,11 @@ class _DoctorAppointmentPageState extends State<DoctorAppointmentPage> {
   //-----TomTom API------//
 
   List<String> locationSuggestions = [];
+  List<AppointmentModel> _appointments = [];
 
   @override
   void initState() {
     super.initState();
-
     locationController.addListener(() async {
       final query = locationController.text;
       if (query.length >= 3) {
@@ -81,21 +83,39 @@ class _DoctorAppointmentPageState extends State<DoctorAppointmentPage> {
     }
   }
 
-  void _onSave() {
-    final startDT = DateTime(
-      startDate.year,
-      startDate.month,
-      startDate.day,
-      startTime.hour,
-      startTime.minute,
-    );
-    final endDT = DateTime(
-      endDate.year,
-      endDate.month,
-      endDate.day,
-      endTime.hour,
-      endTime.minute,
-    );
+  void _onSave() async {
+    DateTime startDT;
+     DateTime endDT;
+
+  if (isAllDay) {
+    startDT = DateTime(startDate.year, startDate.month, startDate.day, 0, 0);
+    endDT = DateTime(endDate.year, endDate.month, endDate.day, 23, 59);
+  } else {
+  startDT = DateTime(
+    startDate.year,
+    startDate.month,
+    startDate.day,
+    startTime.hour,
+    startTime.minute,
+  );
+  endDT = DateTime(
+    endDate.year,
+    endDate.month,
+    endDate.day,
+    endTime.hour,
+    endTime.minute,
+  );
+  }
+  final appointment = AppointmentModel(
+    title: titleController.text,
+    location: locationController.text,
+    note: noteController.text,
+    startTime: startDT,
+    endTime: endDT,
+    isAllDay: isAllDay,
+    reminder: reminder,
+  );
+
 
     print("=== Doctor Appointment Saved ===");
     print("Title: ${titleController.text}");
@@ -106,7 +126,13 @@ class _DoctorAppointmentPageState extends State<DoctorAppointmentPage> {
     print("End: ${DateFormat('yyyy-MM-dd – hh:mm a').format(endDT)}");
     print("Reminder: $reminder");
 
-    Navigator.pop(context);
+    await DatabaseHelper().insertAppointment(appointment);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Appointment saved")),
+      );
+
+      Navigator.pop(context); 
   }
 
   void _onCancel() {

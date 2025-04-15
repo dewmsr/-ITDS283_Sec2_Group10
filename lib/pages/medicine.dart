@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:time_picker_spinner/time_picker_spinner.dart';
 import '../layout/main_layout.dart';
+import '../models/medicine_mod.dart';
+import '../db/database.dart';
 
 
 
@@ -45,17 +47,33 @@ class _TakeMedicinePageState extends State<TakeMedicinePage> {
     });
   }
 
-  void _onSave() {
-    print("=== Saved Medicine Info ===");
-    print("Medicine: ${medicineController.text}");
-    print("Amount: ${amountController.text}");
-    print("Times per day: ${timesPerDayController.text}");
-    print("Time selected: ${selectedMealTimes.join(', ')}");    print("Meal relation: $mealRelation");
-    print("Reminder: $reminder");
-    print("Note: ${noteController.text}");
+  void _onSave() async {
+  final now = DateTime.now();
+  final timeStrings = {
+    for (var key in selectedMealTimes)
+      key: mealTimes[key]!.format(context)
+  };
 
-    Navigator.pop(context); // กลับหน้าก่อนหน้า
-  }
+  final medicine = MedicineModel(
+    name: medicineController.text,
+    amount: int.tryParse(amountController.text) ?? 0,
+    timesPerDay: int.tryParse(timesPerDayController.text) ?? 0,
+    timeSlots: selectedMealTimes.toList(),
+    timeStrings: timeStrings,
+    relation: mealRelation,
+    note: noteController.text,
+    reminder: reminder,
+    date: DateTime(now.year, now.month, now.day),
+  );
+
+  await DatabaseHelper().insertMedicine(medicine);
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text("Medicine Saved!")),
+  );
+
+  Navigator.pop(context);
+}
 
   void _onCancel() {
     Navigator.pop(context);

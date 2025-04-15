@@ -4,8 +4,36 @@ import 'package:healthacker2/pages/doctor.dart';
 import 'package:healthacker2/pages/medicine.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:pie_chart/pie_chart.dart';
+import 'package:intl/intl.dart';
+import '../models/appointment.dart';
+import '../db/database.dart';
 
-class HomeContent extends StatelessWidget {
+class HomeContent extends StatefulWidget {
+  @override
+  _HomeContentState createState() => _HomeContentState();
+}
+
+class _HomeContentState extends State<HomeContent> {
+  AppointmentModel? nextAppointment;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadNextAppointment();
+  }
+
+  Future<void> _loadNextAppointment() async {
+    final all = await DatabaseHelper().getAllAppointments();
+    final now = DateTime.now();
+
+    final upcoming = all.where((a) => a.startTime.isAfter(now)).toList();
+    upcoming.sort((a, b) => a.startTime.compareTo(b.startTime));
+
+    setState(() {
+      nextAppointment = upcoming.isNotEmpty ? upcoming.first : null;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     double imageHeight = 300;
@@ -50,6 +78,7 @@ class HomeContent extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Monthly Period Card
                   Container(
                     padding: EdgeInsets.all(16),
                     decoration: BoxDecoration(
@@ -73,21 +102,25 @@ class HomeContent extends StatelessWidget {
                   ),
                   SizedBox(height: 20),
                   Row(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          padding: EdgeInsets.all(16),
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Pie Chart กลมสวย
+                        Container(
+                          width: 100,
+                          height: 100,
                           decoration: BoxDecoration(
                             color: Color(0xFF00C853),
-                            borderRadius: BorderRadius.circular(12),
+                            shape: BoxShape.circle,
                           ),
+                          padding: const EdgeInsets.all(12),
                           child: Stack(
                             alignment: Alignment.center,
                             children: [
                               PieChart(
                                 dataMap: dataMap,
                                 chartType: ChartType.ring,
-                                colorList: [Color.fromARGB(255, 255, 255, 255), Color.fromARGB(51, 0, 0, 0)],
+                                ringStrokeWidth: 12,
+                                colorList: [Colors.white, Colors.white.withOpacity(0.3)],
                                 legendOptions: LegendOptions(showLegends: false),
                                 chartValuesOptions: ChartValuesOptions(
                                   showChartValues: false,
@@ -97,48 +130,59 @@ class HomeContent extends StatelessWidget {
                               Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(FontAwesomeIcons.capsules, color: Color.fromARGB(255, 255, 255, 255), size: 24),
+                                  Icon(FontAwesomeIcons.capsules, color: Colors.white, size: 20),
                                   SizedBox(height: 4),
                                   Text(
                                     '${dataMap["Completed"]?.toInt() ?? 0}%',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      color: const Color.fromARGB(255, 255, 255, 255),
-                                    ),
+                                    style: TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold),
                                   ),
                                 ],
                               ),
                             ],
                           ),
                         ),
-                      ),
-                      SizedBox(width: 10),
-                      Container(
-                        padding: EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Color.fromARGB(255, 98, 52, 222),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
+                        SizedBox(width: 30),
+
+                        // Appointment Box สีม่วง
+                        Expanded(
+                          child: Container(
+                            padding: EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: Color(0xFF585AE2),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Icon(Icons.local_hospital_sharp, color: Colors.white, size: 24),
-                                SizedBox(width: 8),
-                                Text("Next Appointment", style: TextStyle(color: Colors.white, fontSize: 18)),
+                                Row(
+                                  children: [
+                                    Icon(Icons.add_box_rounded, color: Colors.white),
+                                    SizedBox(width: 8),
+                                    Text("Next Appointment", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                                  ],
+                                ),
+                                SizedBox(height: 10),
+                                if (nextAppointment != null) ...[
+                                  Text(nextAppointment!.title, style: TextStyle(color: Colors.white, fontSize: 14)),
+                                  SizedBox(height: 2),
+                                  Text(nextAppointment!.location, style: TextStyle(color: Colors.white70)),
+                                  SizedBox(height: 2),
+                                  Text(
+                                    DateFormat('EEE d MMM yyyy, h:mm a').format(nextAppointment!.startTime),
+                                    style: TextStyle(color: Colors.white70),
+                                  ),
+                                ] else
+                                  Text("No upcoming appointments", style: TextStyle(color: Colors.white70)),
                               ],
                             ),
-                            SizedBox(height: 8),
-                            Text("Activity", style: TextStyle(color: Colors.white70)),
-                            Text("Hospital Name", style: TextStyle(color: Colors.white70)),
-                            Text("Feb 17", style: TextStyle(color: Colors.white70)),
-                          ],
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
+
                   SizedBox(height: 20),
+
+                  // Bottom Buttons
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
