@@ -3,6 +3,8 @@ import 'package:time_picker_spinner/time_picker_spinner.dart';
 import '../layout/main_layout.dart';
 import '../models/medicine_mod.dart';
 import '../db/database.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 
 
@@ -48,13 +50,24 @@ class _TakeMedicinePageState extends State<TakeMedicinePage> {
   }
 
   void _onSave() async {
+  final prefs = await SharedPreferences.getInstance();
+  final userId = prefs.getInt('userId') ?? 0;
+
   final now = DateTime.now();
+  final defaultTimes = {
+    "breakfast": "09:00 AM",
+    "lunch": "12:00 PM",
+    "dinner": "06:00 PM",
+    "bedtime": "10:00 PM",
+  };
+
   final timeStrings = {
-    for (var key in selectedMealTimes)
-      key: mealTimes[key]!.format(context)
+    for (var time in selectedMealTimes)
+      time: defaultTimes[time]!,
   };
 
   final medicine = MedicineModel(
+    userId: userId,
     name: medicineController.text,
     amount: int.tryParse(amountController.text) ?? 0,
     timesPerDay: int.tryParse(timesPerDayController.text) ?? 0,
@@ -66,7 +79,7 @@ class _TakeMedicinePageState extends State<TakeMedicinePage> {
     date: DateTime(now.year, now.month, now.day),
   );
 
-  await DatabaseHelper().insertMedicine(medicine);
+  await DatabaseHelper().insertMedicine(medicine, userId);
 
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(content: Text("Medicine Saved!")),
@@ -74,6 +87,7 @@ class _TakeMedicinePageState extends State<TakeMedicinePage> {
 
   Navigator.pop(context);
 }
+
 
   void _onCancel() {
     Navigator.pop(context);

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/appointment.dart';
 import '../models/medicine_mod.dart';
 import '../db/database.dart';
+import 'package:table_calendar/table_calendar.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class CalendarPage extends StatefulWidget {
   @override
@@ -18,16 +20,27 @@ class _CalendarPageState extends State<CalendarPage> {
   List<AppointmentModel> filteredAppointments = [];
   List<MedicineModel> _medicines = [];
 
+  int? userId;
+
   @override
   void initState() {
     super.initState();
     selectedDay = focusedDay;
-    _loadAppointments();
-    _loadMedicines();
+    _loadUserId();
+  }
+
+  Future<void> _loadUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    userId = prefs.getInt('userId');
+    if (userId != null) {
+      await _loadAppointments();
+      await _loadMedicines();
+    }
   }
 
   Future<void> _loadAppointments() async {
-    final data = await DatabaseHelper().getAllAppointments();
+    if (userId == null) return;
+    final data = await DatabaseHelper().getAppointmentsByUser(userId!);
     setState(() {
       allAppointments = data;
       _filterAppointments();
@@ -35,7 +48,8 @@ class _CalendarPageState extends State<CalendarPage> {
   }
 
   Future<void> _loadMedicines() async {
-    final data = await DatabaseHelper().getAllMedicines();
+    if (userId == null) return;
+    final data = await DatabaseHelper().getAllMedicines(userId!);
     setState(() {
       _medicines = data.where((m) =>
         m.date.year == selectedDay!.year &&
@@ -235,7 +249,7 @@ class _CalendarPageState extends State<CalendarPage> {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Color(0xFF64B5F6),
+        color: const Color(0xFF39CA5B),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -243,20 +257,22 @@ class _CalendarPageState extends State<CalendarPage> {
         children: [
           Row(
             children: [
-              Icon(Icons.medication, color: Colors.white),
+              Icon(FontAwesomeIcons.pills, color: Colors.white),
               const SizedBox(width: 10),
               Text(med.name, style: TextStyle(color: Colors.white, fontSize: 18)),
             ],
           ),
           SizedBox(height: 8),
-          Text(med.relation == 'before' ? "Before Meals" : "After Meals",
-              style: TextStyle(color: Colors.white70)),
+          Text(
+            med.relation == 'before' ? "Before Meals" : "After Meals",
+            style: TextStyle(color: Colors.white70),
+          ),
           SizedBox(height: 6),
           ...med.timeStrings.entries.map((entry) => Row(
                 children: [
                   Icon(Icons.circle, size: 8, color: Colors.white70),
                   SizedBox(width: 6),
-                  Text("${entry.key.capitalize()} - ${entry.value}", style: TextStyle(color: Colors.white)),
+                  Text("${entry.key[0].toUpperCase()}${entry.key.substring(1)} - ${entry.value}", style: TextStyle(color: Colors.white)),
                 ],
               )),
           const Divider(color: Colors.white54, thickness: 1, height: 20),
@@ -300,8 +316,4 @@ class _CalendarPageState extends State<CalendarPage> {
       ),
     );
   }
-}
-
-extension StringCasingExtension on String {
-  String capitalize() => this.length > 0 ? '${this[0].toUpperCase()}${this.substring(1)}' : this;
 }
