@@ -4,13 +4,8 @@
 
 ##วิธีการรันโปรเจค
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- ทำการ clone โปรเจคนี้ลงบน Visual Studio Code (ถ้าหากยังไม่มีการลง extension Dart และ Flutter ให้ทำการลงด้วย)
+- ทำการรัน command "flutter doctor" และ "flutter pub get" บน terminal
+- ทำการ Launch Emulator เป็น mobile Emulator โดยการ View > Command Palette > Flutter: Launch Emulator เลือก Android API35
+- เมื่อ Emulator ขึ้นแล้วไปที่ไฟล์ main.dart และทำการรันโดยการกด F5 และทำการกดปุ่ม Restart
+- สามารถทำการทดสอบแอปพลิเคชันได้!
