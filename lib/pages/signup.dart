@@ -1,11 +1,71 @@
 import 'package:flutter/material.dart';
+import '../models/user.dart';
+import '../db/database.dart';
+import '../pages/homepage.dart';
+import 'package:sqflite/sqflite.dart'; 
+import 'package:shared_preferences/shared_preferences.dart';
 
-class SignUpPage extends StatelessWidget {
+
+
+class SignUpPage extends StatefulWidget {
+  const SignUpPage({super.key});
+
+  @override
+  State<SignUpPage> createState() => _SignUpPageState();
+}
+
+class _SignUpPageState extends State<SignUpPage> {
   final TextEditingController firstNameController = TextEditingController();
   final TextEditingController lastNameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+
+  bool _obscurePassword = true;
+
+  final DatabaseHelper _dbHelper = DatabaseHelper();
+
+  Future<void> _signUp() async {
+    String email = emailController.text.trim();
+
+    // ตรวจสอบว่ามี email นี้ในระบบอยู่แล้วไหม
+    UserModel? existingUser = await _dbHelper.getUserByEmail(email);
+    if (existingUser != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Email already exists")),
+      );
+      return;
+    }
+
+    // บันทึกข้อมูลใหม่
+    UserModel newUser = UserModel(
+      firstName: firstNameController.text.trim(),
+      lastName: lastNameController.text.trim(),
+      email: email,
+      phone: phoneController.text.trim(),
+      password: passwordController.text.trim(),
+    );
+
+    await _dbHelper.insertUser(newUser);
+
+// ✅ ดึง user ที่เพิ่งสมัครกลับมา (ใช้ email)
+UserModel? signedUpUser = await _dbHelper.getUserByEmail(email);
+
+// ✅ STEP 1: บันทึก userId
+if (signedUpUser != null) {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setInt('userId', signedUpUser.id!);
+}
+
+// ✅ แจ้งและไปหน้า HomePage หรือ Profile
+ScaffoldMessenger.of(context).showSnackBar(
+  SnackBar(content: Text("Account created successfully!")),
+);
+
+Navigator.pop(context); // กลับไปหน้า LoginPage ที่เคย push มาก่อน
+
+
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +87,6 @@ class SignUpPage extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 30),
-
               _buildInputField(firstNameController, 'Enter Your First Name'),
               SizedBox(height: 15),
               _buildInputField(lastNameController, 'Enter Your Last Name'),
@@ -36,38 +95,23 @@ class SignUpPage extends StatelessWidget {
               SizedBox(height: 15),
               _buildInputField(phoneController, 'Enter Your Phone Number'),
               SizedBox(height: 15),
-              _buildInputField(passwordController, 'Enter Your Password',
-                  isPassword: true),
+              _buildPasswordField(passwordController, 'Enter Your Password'),
 
               SizedBox(height: 30),
-             ElevatedButton(
-              onPressed: () {
-                final firstName = firstNameController.text;
-                final lastName = lastNameController.text;
-                final email = emailController.text;
-                final phone = phoneController.text;
-                final password = passwordController.text;
-
-                // บันทึกข้อมูล (คุณสามารถเชื่อม Firebase/SQLite/Provider ที่นี่)
-                print('Saved: $firstName $lastName / $email / $phone / $password');
-
-                // กลับไปหน้า Login
-                Navigator.pop(context);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFFE3D322),
-                minimumSize: Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+              ElevatedButton(
+                onPressed: _signUp,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Color(0xFFE3D322),
+                  minimumSize: Size(double.infinity, 50),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: Text(
+                  'Sign Up',
+                  style: TextStyle(color: Colors.black, fontSize: 16),
                 ),
               ),
-              child: Text(
-                'Sign Up',
-                style: TextStyle(color: Colors.black, fontSize: 16),
-              ),
-            ),
-
-
               SizedBox(height: 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -75,9 +119,7 @@ class SignUpPage extends StatelessWidget {
                   Text("Already have an account? ",
                       style: TextStyle(color: Colors.white, fontSize: 16)),
                   GestureDetector(
-                    onTap: () {
-                      Navigator.pop(context); // ย้อนกลับไปหน้า login
-                    },
+                    onTap: () => Navigator.pop(context),
                     child: Text(
                       'Login',
                       style: TextStyle(
@@ -97,18 +139,50 @@ class SignUpPage extends StatelessWidget {
     );
   }
 
-  Widget _buildInputField(TextEditingController controller, String hint,
-      {bool isPassword = false}) {
+  Widget _buildInputField(TextEditingController controller, String hint) {
     return TextField(
       controller: controller,
-      obscureText: isPassword,
       style: TextStyle(color: Colors.white),
       decoration: InputDecoration(
         hintText: hint,
         hintStyle: TextStyle(color: Colors.white70),
-        suffixIcon: isPassword
-            ? Icon(Icons.visibility_off, color: Colors.white)
-            : null,
+        filled: true,
+        fillColor: const Color(0xFF01497C),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.white),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.white),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.white),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPasswordField(TextEditingController controller, String hint) {
+    return TextField(
+      controller: controller,
+      obscureText: _obscurePassword,
+      style: TextStyle(color: Colors.white),
+      decoration: InputDecoration(
+        hintText: hint,
+        hintStyle: TextStyle(color: Colors.white70),
+        suffixIcon: IconButton(
+          icon: Icon(
+            _obscurePassword ? Icons.visibility_off : Icons.visibility,
+            color: Colors.white,
+          ),
+          onPressed: () {
+            setState(() {
+              _obscurePassword = !_obscurePassword;
+            });
+          },
+        ),
         filled: true,
         fillColor: const Color(0xFF01497C),
         border: OutlineInputBorder(

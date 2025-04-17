@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../layout/main_layout.dart';
-import '../service/api_map.dart'; // <- เปลี่ยน path ตามโฟลเดอร์ที่คุณเก็บไฟล์ไว้
+import '../service/api_map.dart';
+import '../models/appointment.dart';
+import '../db/database.dart';
 
 class DoctorAppointmentPage extends StatefulWidget {
   @override
@@ -13,14 +16,17 @@ class _DoctorAppointmentPageState extends State<DoctorAppointmentPage> {
   TextEditingController locationController = TextEditingController();
   TextEditingController noteController = TextEditingController();
 
-  //-----TomTom API------//
-
   List<String> locationSuggestions = [];
+  bool isAllDay = false;
+  TimeOfDay startTime = TimeOfDay(hour: 9, minute: 0);
+  TimeOfDay endTime = TimeOfDay(hour: 10, minute: 0);
+  DateTime startDate = DateTime.now();
+  DateTime endDate = DateTime.now();
+  String reminder = "1 hour before";
 
   @override
   void initState() {
     super.initState();
-
     locationController.addListener(() async {
       final query = locationController.text;
       if (query.length >= 3) {
@@ -30,22 +36,11 @@ class _DoctorAppointmentPageState extends State<DoctorAppointmentPage> {
             locationSuggestions = results;
           });
         } catch (e) {
-          print("Error fetching locations: $e");
+          print("Error fetching locations: \$e");
         }
       }
     });
   }
-
-  bool isAllDay = false;
-  bool isTitleActive = false;
-
-  TimeOfDay startTime = TimeOfDay(hour: 9, minute: 0);
-  TimeOfDay endTime = TimeOfDay(hour: 10, minute: 0);
-
-  DateTime startDate = DateTime(2025, 4, 1);
-  DateTime endDate = DateTime(2025, 4, 1);
-
-  String reminder = "1 hour before";
 
   void _pickTime({required bool isStart}) async {
     final picked = await showTimePicker(
@@ -81,7 +76,11 @@ class _DoctorAppointmentPageState extends State<DoctorAppointmentPage> {
     }
   }
 
-  void _onSave() {
+  void _onSave() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getInt('userId');
+    if (userId == null) return;
+
     final startDT = DateTime(
       startDate.year,
       startDate.month,
@@ -97,31 +96,27 @@ class _DoctorAppointmentPageState extends State<DoctorAppointmentPage> {
       endTime.minute,
     );
 
-    print("=== Doctor Appointment Saved ===");
-    print("Title: ${titleController.text}");
-    print("Location: ${locationController.text}");
-    print("Note: ${noteController.text}");
-    print("All Day: $isAllDay");
-    print("Start: ${DateFormat('yyyy-MM-dd – hh:mm a').format(startDT)}");
-    print("End: ${DateFormat('yyyy-MM-dd – hh:mm a').format(endDT)}");
-    print("Reminder: $reminder");
+    final appointment = AppointmentModel(
+      title: titleController.text,
+      location: locationController.text,
+      note: noteController.text,
+      startTime: startDT,
+      endTime: endDT,
+      isAllDay: isAllDay,
+      reminder: reminder,
+    );
+
+    await DatabaseHelper().insertAppointment(appointment, userId);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Appointment saved")),
+    );
 
     Navigator.pop(context);
   }
 
   void _onCancel() {
     Navigator.pop(context);
-  }
-
-  String formatDateTime(DateTime date, TimeOfDay time) {
-    final dt = DateTime(
-      date.year,
-      date.month,
-      date.day,
-      time.hour,
-      time.minute,
-    );
-    return DateFormat('EEE d MMM y h:mm a').format(dt);
   }
 
   @override
@@ -142,17 +137,11 @@ class _DoctorAppointmentPageState extends State<DoctorAppointmentPage> {
             children: [
               SafeArea(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 20,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        "Doctor's Appointment",
-                        style: TextStyle(color: Colors.white, fontSize: 22),
-                      ),
+                      Text("Doctor's Appointment", style: TextStyle(color: Colors.white, fontSize: 22)),
                       Icon(Icons.notifications, color: Colors.white),
                     ],
                   ),
@@ -163,17 +152,12 @@ class _DoctorAppointmentPageState extends State<DoctorAppointmentPage> {
                   padding: EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(30),
-                    ),
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
                   ),
                   child: SingleChildScrollView(
                     child: Column(
                       children: [
-                        TextField(
-                          controller: titleController,
-                          decoration: InputDecoration(labelText: "Title"),
-                        ),
+                        TextField(controller: titleController, decoration: InputDecoration(labelText: "Title")),
                         SizedBox(height: 10),
                         Row(
                           children: [
@@ -181,154 +165,88 @@ class _DoctorAppointmentPageState extends State<DoctorAppointmentPage> {
                             SizedBox(width: 5),
                             Text("All day"),
                             Spacer(),
-                            Switch(
-                              value: isAllDay,
-                              onChanged: (value) {
-                                setState(() {
-                                  isAllDay = value;
-                                });
-                              },
-                            ),
+                            Switch(value: isAllDay, onChanged: (value) => setState(() => isAllDay = value)),
                           ],
                         ),
                         if (!isAllDay) ...[
-                          SizedBox(height: 10),
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              "Start",
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              TextButton(
-                                onPressed: () => _pickDate(isStart: true),
-                                child: Text(
-                                  DateFormat('y-MM-dd').format(startDate),
-                                ),
-                              ),
-                              TextButton(
-                                onPressed: () => _pickTime(isStart: true),
-                                child: Text(startTime.format(context)),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 10),
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              "End",
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              TextButton(
-                                onPressed: () => _pickDate(isStart: false),
-                                child: Text(
-                                  DateFormat('y-MM-dd').format(endDate),
-                                ),
-                              ),
-                              TextButton(
-                                onPressed: () => _pickTime(isStart: false),
-                                child: Text(endTime.format(context)),
-                              ),
-                            ],
-                          ),
+                          _buildDateTimePicker("Start", true),
+                          _buildDateTimePicker("End", false),
                         ],
                         Divider(),
-                        TextField(
-                          controller: locationController,
-                          decoration: InputDecoration(
-                            icon: Icon(Icons.location_on),
-                            hintText: "Location",
-                          ),
-                        ),
+                        TextField(controller: locationController, decoration: InputDecoration(icon: Icon(Icons.location_on), hintText: "Location")),
                         if (locationSuggestions.isNotEmpty)
                           Column(
-                            children:
-                                locationSuggestions.map((suggestion) {
-                                  return ListTile(
-                                    title: Text(suggestion),
-                                    onTap: () {
-                                      setState(() {
-                                        locationController.text = suggestion;
-                                        locationSuggestions = [];
-                                      });
-                                    },
-                                  );
-                                }).toList(),
+                            children: locationSuggestions.map((s) => ListTile(
+                              title: Text(s),
+                              onTap: () => setState(() => locationController.text = s),
+                            )).toList(),
                           ),
-
                         Divider(),
-                        Row(
-                          children: [
-                            Icon(Icons.notifications_active_outlined),
-                            SizedBox(width: 10),
-                            GestureDetector(
-                              onTap: () => _showReminderOptions(),
-                              child: Row(
-                                children: [
-                                  Text(
-                                    reminder,
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                  Icon(Icons.keyboard_arrow_down),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
+                        _buildReminderPicker(),
                         Divider(),
-                        TextField(
-                          controller: noteController,
-                          maxLines: 1,
-                          decoration: InputDecoration(
-                            icon: Icon(Icons.note_alt_outlined),
-                            hintText: "Note",
-                          ),
-                        ),
+                        TextField(controller: noteController, maxLines: 1, decoration: InputDecoration(icon: Icon(Icons.note_alt_outlined), hintText: "Note")),
                         SizedBox(height: 40),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
-                            TextButton(
-                              onPressed: _onCancel,
-                              child: Text(
-                                "Cancel",
-                                style: TextStyle(
-                                  color: Colors.red,
-                                  fontSize: 18,
-                                ),
-                              ),
-                            ),
-                            TextButton(
-                              onPressed: _onSave,
-                              child: Text(
-                                "Save",
-                                style: TextStyle(
-                                  color: Colors.green,
-                                  fontSize: 18,
-                                ),
-                              ),
-                            ),
+                            TextButton(onPressed: _onCancel, child: Text("Cancel", style: TextStyle(color: Colors.red, fontSize: 18))),
+                            TextButton(onPressed: _onSave, child: Text("Save", style: TextStyle(color: Colors.green, fontSize: 18))),
                           ],
                         ),
                       ],
                     ),
                   ),
                 ),
-              ),
+              )
             ],
-          ),
+          )
         ],
       ),
+    );
+  }
+
+  Widget _buildDateTimePicker(String label, bool isStart) {
+    final date = isStart ? startDate : endDate;
+    final time = isStart ? startTime : endTime;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Text(label, style: TextStyle(fontWeight: FontWeight.bold)),
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            TextButton(
+              onPressed: () => _pickDate(isStart: isStart),
+              child: Text(DateFormat('y-MM-dd').format(date)),
+            ),
+            TextButton(
+              onPressed: () => _pickTime(isStart: isStart),
+              child: Text(time.format(context)),
+            ),
+          ],
+        )
+      ],
+    );
+  }
+
+  Widget _buildReminderPicker() {
+    return Row(
+      children: [
+        Icon(Icons.notifications_active_outlined),
+        SizedBox(width: 10),
+        GestureDetector(
+          onTap: () => _showReminderOptions(),
+          child: Row(
+            children: [
+              Text(reminder, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+              Icon(Icons.keyboard_arrow_down),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -352,24 +270,16 @@ class _DoctorAppointmentPageState extends State<DoctorAppointmentPage> {
 
         return ListView(
           shrinkWrap: true,
-          children:
-              options.map((option) {
-                return ListTile(
-                  title: Text(option),
-                  trailing:
-                      reminder == option
-                          ? Icon(Icons.check, color: Colors.blue)
-                          : null,
-                  onTap: () {
-                    setState(() {
-                      reminder = option;
-                    });
-                    Navigator.pop(context);
-                  },
-                );
-              }).toList(),
+          children: options.map((option) => ListTile(
+            title: Text(option),
+            trailing: reminder == option ? Icon(Icons.check, color: Colors.blue) : null,
+            onTap: () {
+              setState(() => reminder = option);
+              Navigator.pop(context);
+            },
+          )).toList(),
         );
       },
     );
   }
-}
+} 

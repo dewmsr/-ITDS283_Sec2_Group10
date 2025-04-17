@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:time_picker_spinner/time_picker_spinner.dart';
 import '../layout/main_layout.dart';
+import '../models/medicine_mod.dart';
+import '../db/database.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 
 
@@ -45,17 +49,45 @@ class _TakeMedicinePageState extends State<TakeMedicinePage> {
     });
   }
 
-  void _onSave() {
-    print("=== Saved Medicine Info ===");
-    print("Medicine: ${medicineController.text}");
-    print("Amount: ${amountController.text}");
-    print("Times per day: ${timesPerDayController.text}");
-    print("Time selected: ${selectedMealTimes.join(', ')}");    print("Meal relation: $mealRelation");
-    print("Reminder: $reminder");
-    print("Note: ${noteController.text}");
+  void _onSave() async {
+  final prefs = await SharedPreferences.getInstance();
+  final userId = prefs.getInt('userId') ?? 0;
 
-    Navigator.pop(context); // กลับหน้าก่อนหน้า
-  }
+  final now = DateTime.now();
+  final defaultTimes = {
+    "breakfast": "09:00 AM",
+    "lunch": "12:00 PM",
+    "dinner": "06:00 PM",
+    "bedtime": "10:00 PM",
+  };
+
+  final timeStrings = {
+    for (var time in selectedMealTimes)
+      time: defaultTimes[time]!,
+  };
+
+  final medicine = MedicineModel(
+    userId: userId,
+    name: medicineController.text,
+    amount: int.tryParse(amountController.text) ?? 0,
+    timesPerDay: int.tryParse(timesPerDayController.text) ?? 0,
+    timeSlots: selectedMealTimes.toList(),
+    timeStrings: timeStrings,
+    relation: mealRelation,
+    note: noteController.text,
+    reminder: reminder,
+    date: DateTime(now.year, now.month, now.day),
+  );
+
+  await DatabaseHelper().insertMedicine(medicine, userId);
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text("Medicine Saved!")),
+  );
+
+  Navigator.pop(context);
+}
+
 
   void _onCancel() {
     Navigator.pop(context);
