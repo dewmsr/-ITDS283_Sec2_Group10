@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'pages/login.dart';
 import 'pages/homepage.dart';
@@ -9,7 +8,6 @@ import 'pages/selectactivity.dart';
 import 'pages/profile.dart';
 import 'layout/main_layout.dart';
 import 'widgets/homecontent.dart';
-
 
 void main() {
   runApp(MyApp());
