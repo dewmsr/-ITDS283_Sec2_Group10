@@ -28,6 +28,7 @@ class _PeriodTrackerState extends State<PeriodTracker> {
     setState(() {
       selectedDate = date;
     });
+    loadPeriodData(date); // โหลดข้อมูลจากฐานข้อมูล
   }
 
   void cancelData(BuildContext context) {
@@ -56,6 +57,28 @@ class _PeriodTrackerState extends State<PeriodTracker> {
     );
 
     Navigator.pop(context);
+  }
+
+  void loadPeriodData(DateTime date) async {
+    if (userId == null) return;
+    final db = DatabaseHelper();
+    final period = await db.getPeriodByDate(userId!, date);
+
+    if (period != null) {
+      setState(() {
+        volume = period.volume;
+        mood = period.mood;
+        symptom = period.symptom;
+        sexDrive = period.sexDrive;
+      });
+    } else {
+      setState(() {
+        volume = '';
+        mood = '';
+        symptom = '';
+        sexDrive = '';
+      });
+    }
   }
 
   Widget buildChoice(String selected, String value, Function(String) onSelect) {
@@ -93,6 +116,9 @@ class _PeriodTrackerState extends State<PeriodTracker> {
   void _loadUserId() async {
     final prefs = await SharedPreferences.getInstance();
     userId = prefs.getInt('userId');
+    if (userId != null) {
+      loadPeriodData(selectedDate);
+    }
   }
 
   @override

@@ -1,5 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:intl/intl.dart'; // ✅ เพิ่มเพื่อจัดการวันที่
 import '../models/user.dart';
 import '../models/appointment.dart';
 import '../models/medicine_mod.dart';
@@ -24,12 +25,11 @@ class DatabaseHelper {
     final path = join(dbPath, dbName);
 
     return await openDatabase(
-  path,
-  version: 1,
-  onCreate: _createDB,
-  onUpgrade: _onUpgrade, // ✅ เพิ่มอันนี้
-);
-
+      path,
+      version: 1,
+      onCreate: _createDB,
+      onUpgrade: _onUpgrade,
+    );
   }
 
   Future _createDB(Database db, int version) async {
@@ -92,57 +92,55 @@ class DatabaseHelper {
       )
     ''');
   }
+
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-  // เพิ่มตารางหรือลักษณะอื่น ๆ โดยไม่ลบฐานข้อมูลเดิม
-  // ตัวอย่างเช่น:
-  await db.execute('''
-    CREATE TABLE IF NOT EXISTS appointments(
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id INTEGER,
-      title TEXT NOT NULL,
-      location TEXT,
-      note TEXT,
-      start_time TEXT NOT NULL,
-      end_time TEXT NOT NULL,
-      is_all_day INTEGER,
-      reminder TEXT,
-      status TEXT DEFAULT 'pending',
-      FOREIGN KEY (user_id) REFERENCES users(id)
-    )
-  ''');
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS appointments(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        title TEXT NOT NULL,
+        location TEXT,
+        note TEXT,
+        start_time TEXT NOT NULL,
+        end_time TEXT NOT NULL,
+        is_all_day INTEGER,
+        reminder TEXT,
+        status TEXT DEFAULT 'pending',
+        FOREIGN KEY (user_id) REFERENCES users(id)
+      )
+    ''');
 
-  await db.execute('''
-    CREATE TABLE IF NOT EXISTS medicines (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id INTEGER,
-      name TEXT,
-      amount INTEGER,
-      times_per_day INTEGER,
-      time_slots TEXT,
-      time_strings TEXT,
-      relation TEXT,
-      note TEXT,
-      reminder TEXT,
-      date TEXT,
-      status TEXT DEFAULT 'pending',
-      FOREIGN KEY (user_id) REFERENCES users(id)
-    )
-  ''');
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS medicines (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        name TEXT,
+        amount INTEGER,
+        times_per_day INTEGER,
+        time_slots TEXT,
+        time_strings TEXT,
+        relation TEXT,
+        note TEXT,
+        reminder TEXT,
+        date TEXT,
+        status TEXT DEFAULT 'pending',
+        FOREIGN KEY (user_id) REFERENCES users(id)
+      )
+    ''');
 
-  await db.execute('''
-    CREATE TABLE IF NOT EXISTS periods (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id INTEGER,
-      date TEXT,
-      volume TEXT,
-      mood TEXT,
-      symptom TEXT,
-      sex_drive TEXT,
-      FOREIGN KEY (user_id) REFERENCES users(id)
-    )
-  ''');
-}
-
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS periods (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        date TEXT,
+        volume TEXT,
+        mood TEXT,
+        symptom TEXT,
+        sex_drive TEXT,
+        FOREIGN KEY (user_id) REFERENCES users(id)
+      )
+    ''');
+  }
 
   Future<int> insertUser(UserModel user) async {
     final db = await database;
@@ -207,11 +205,11 @@ class DatabaseHelper {
   Future<List<MedicineModel>> getTodayMedicines(int userId) async {
     final db = await database;
     final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day).toIso8601String();
+    final today = DateFormat('yyyy-MM-dd').format(now);
     final result = await db.query(
       'medicines',
-      where: 'date = ? AND user_id = ?',
-      whereArgs: [today, userId],
+      where: 'date LIKE ? AND user_id = ?',
+      whereArgs: ['$today%', userId],
     );
     return result.map((e) => MedicineModel.fromMap(e)).toList();
   }
@@ -234,10 +232,26 @@ class DatabaseHelper {
     return result.map((e) => PeriodModel.fromMap(e)).toList();
   }
 
+  // ✅ เพิ่มฟังก์ชันนี้ เพื่อดึงข้อมูลตามวัน
+  Future<PeriodModel?> getPeriodByDate(int userId, DateTime date) async {
+    final db = await database;
+    final formattedDate = DateFormat('yyyy-MM-dd').format(date);
+    final res = await db.query(
+      'periods',
+      where: 'user_id = ? AND date LIKE ?',
+      whereArgs: [userId, '$formattedDate%'],
+    );
+
+    if (res.isNotEmpty) {
+      return PeriodModel.fromMap(res.first);
+    }
+    return null;
+  }
+
   Future<void> deleteDatabaseManually() async {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, 'users.db');
     await deleteDatabase(path);
-    print("✅ Database deleted successfully: \$path");
+    print("✅ Database deleted successfully: $path");
   }
 }
